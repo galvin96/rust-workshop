@@ -85,38 +85,106 @@
 
 
 
-#[derive(Debug, Clone)]
-struct MyData {
-    val1: i32,
-    val2: String,
+// #[derive(Debug, Clone)]
+// struct MyData {
+//     val1: i32,
+//     val2: String,
+// }
+
+
+
+// fn main() {
+//     let d = MyData {
+//         val1: 35,
+//         val2: String::from("Hello World"),
+//     };
+
+//     let both = d.get_both();
+//     let x = d.get_val1();
+//     let y = d.get_val2();
+// }
+
+
+// impl MyData {
+//     pub fn get_val1(&self) -> i32 {
+//         return self.val1;
+//     }
+
+//     pub fn get_val2(&self) -> String {
+//         return self.val2.to_string();
+//     }
+
+//     pub fn get_both(&self) -> (i32, String) {
+//         return (self.val1, self.val2.to_string());
+//     }
+// }
+
+
+
+#![allow(dead_code)]
+
+struct Store {
+    name: String,
+    items: Vec<Item>,
 }
 
-
-
-fn main() {
-    let d = MyData {
-        val1: 35,
-        val2: String::from("Hello World"),
-    };
-
-    let both = d.get_both();
-    let x = d.get_val1();
-    let y = d.get_val2();
+#[derive(Debug)]
+struct Item {
+    name: String,
+    price: f32,
 }
 
-
-impl MyData {
-    pub fn get_val1(&self) -> i32 {
-        return self.val1;
+impl Store {
+    fn new(name: String) -> Store {
+        Store {
+            name: name,
+            items: vec![],
+        }
     }
 
-    pub fn get_val2(&self) -> String {
-        return self.val2.to_string();
+    fn add_item(&mut self, item: Item) {
+        self.items.push(item);
     }
 
-    pub fn get_both(&self) -> (i32, String) {
-        return (self.val1, self.val2.to_string());
+    fn price(&self, item_name: &str) -> Option<f32> {
+        for item in &self.items {
+            if item.name == item_name {
+                return Some(item.price);
+            }
+        }
+        None
+    }
+
+    fn total_price(&self, shopping_list: &[&str]) -> Option<f32> {
+        let mut sum = 0.0;
+        for item in shopping_list {
+            if self.price(item) == None {
+                return None;
+            }
+            sum += self.price(item).unwrap();
+        }
+        Some(sum)
     }
 }
 
+fn build_store() -> Store {
+    let mut store = Store::new(format!("Rustmart"));
+    store.add_item(Item { name: format!("chocolate"), price: 5.0 });
+    store.add_item(Item { name: format!("socks"), price: 23.0 });
+    store.add_item(Item { name: format!("plush Mozilla dinosaur"), price: 13.0 });
+    store
+}
 
+#[test]
+fn total_price() {
+    let store = build_store();
+    let list = vec!["chocolate", "plush Mozilla dinosaur"];
+    assert_eq!(store.total_price(&list), Some(18.0));
+}
+
+#[test]
+fn total_price_missing() {
+    let store = build_store();
+    let list = vec!["chocolate", "plush Mozilla dinosaur", "fork and knife"];
+    assert_eq!(store.total_price(&list), None);
+}
